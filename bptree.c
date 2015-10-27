@@ -29,7 +29,12 @@ bp_tree* free_tree( bp_tree* T ){
 		unsigned i;
 		for(i = 0; i <= T->keys_number; i++) free_tree(T->children[i]);
 	}
+	if(T->is_leaf){
+		unsigned i;
+		for(i = 0; i < T->keys_number; i++) free(T->data[i]);
+	}
 	free(T->children);
+	free(T->data);
 	free(T->keys);
 	free(T);
 	return NULL;
@@ -49,18 +54,41 @@ void print_tree( bp_tree* T, unsigned height ){
 	print_tree(T->children[i], height + 1);
 }
 
+void print_data( bp_tree* T ){
+	if(!T) return;
+	bp_tree* aux = T;
+	while(!aux->is_leaf)
+		aux = aux->children[0];
+	while(aux){
+		unsigned i;
+		for(i = 0; i < aux->keys_number; i++)
+			printf("Matricula: %d; Nome: %s; CR: %.2f\n", aux->keys[i], aux->data[i]->name, aux->data[i]->grade);
+		aux = aux->next;
+	}
+}
+
 bp_tree* search_key( bp_tree* T, int key ){
 	if(!T) return NULL;
 	unsigned i = 0;
 	while(i < T->keys_number && key > T->keys[i]) i++;
-	if(i < T->keys_number && key == T->keys[i]) return T;
+	if(i < T->keys_number && key == T->keys[i] && T->is_leaf) return T;
 	if(T->is_leaf) return NULL;
 	return search_key(T->children[i], key);
 }
 
+bp_tree* edit_data( bp_tree* T, int key, info* data ){
+	bp_tree* aux = search_key(T, key);
+	if(!aux) return T;
+	unsigned i = 0;
+	while(i < aux->keys_number && key > aux->keys[i]) i++;
+	free(aux->data[i]);
+	aux->data[i] = data;
+	return T;
+}
+
 bp_tree* divide_node( bp_tree* x, int index, bp_tree* y ){
 	// Divide node y into node x->(z,y), where x will be the father,
-	// z will take t-1 first keys and y will take the remaining children
+	// z will take t-1 last keys and y will take the remaining children
 	bp_tree* z = make_node();
 	z->keys_number = t - 1;
 	z->is_leaf = y->is_leaf;
@@ -73,7 +101,10 @@ bp_tree* divide_node( bp_tree* x, int index, bp_tree* y ){
 	if(z->is_leaf){
 		for(j = 0; j < t - 1; j++)
 			z->data[j] = y->data[j + t];
+		z->next = y->next;
 		y->next = z;
+		// z->next = x->children[index];
+		// x->next = NULL;
 	}
 	if(!y->is_leaf)
 		for(j = 0; j < t; j++){
@@ -151,6 +182,10 @@ bp_tree* insert_key( bp_tree* T, int key, info* data ){
 	}
 	// Insert the key
 	T = partial_insert(T, key, data);
+
+	// Correct children linking
+	// T = link_leaves(T);
+
 	return T;
 }
 

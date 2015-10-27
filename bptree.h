@@ -34,13 +34,15 @@ typedef struct bptree{
 bp_tree* init_tree();
 bp_tree* make_node();
 info * make_ninfo( char*, float );
-
-bp_tree* free_tree( bp_tree* );
 void print_tree( bp_tree*, unsigned );
-bp_tree* search_key( bp_tree*, int );
+void print_data( bp_tree* );
 bp_tree* divide_node( bp_tree*, int, bp_tree* );
 bp_tree* partial_insert( bp_tree*, int, info* );
 bp_tree* insert_key( bp_tree*, int, info* );
+bp_tree* free_tree( bp_tree* );
+bp_tree* search_key( bp_tree*, int );
+bp_tree* edit_data( bp_tree*, int, info* );
+
 bp_tree* remove_key( bp_tree*, int );
 bp_tree* _remove_key( bp_tree*, int );
 
