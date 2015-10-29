@@ -2,10 +2,17 @@
 #include "bptree.h"
 
 int main(){
-	bp_tree * tree = init_tree();
+	unsigned _t = 0;
+	printf("Entre com o grau da árvore (>= 2): ");
+	while(_t < 2)
+		scanf(" %i", &_t);
+
+	bp_tree * tree = init_tree(_t);
+
 	int num = 0, from;
 	char name[31];
 	float cr;
+
 	printf("Digite um numero para adicionar; ou\n");
 	printf("0 para imprimir árvore; ou\n");
 	printf("-2 para buscar; ou\n");
@@ -13,11 +20,14 @@ int main(){
 	printf("-4 para alterar informação de um aluno; ou\n");
 	printf("-9 para remover; ou\n");
 	printf("-1 para sair\n");
+
 	while(num != -1){
 		scanf(" %i", &num);
 		if(num == -9){
 		  scanf(" %d", &from);
 		  tree = remove_key(tree, from);
+		  print_tree(tree, 0);
+		  printf("\n");
 		}
 		else if(num == -1){
 		  printf("\n");
@@ -28,7 +38,7 @@ int main(){
 		else if(num == -2){
 		  printf("\n");
 		  scanf(" %d", &from);
-		  printf("Nó (folhx) com chave: %d\n", from);
+		  printf("Nó (folha) com chave: %d\n", from);
 		  print_tree(search_key(tree, from), 0);
 		}
 		else if(num == -3){
@@ -53,7 +63,7 @@ int main(){
 			scanf(" %f", &cr);
 			printf("Inserindo chave: %d\n", num);
 			tree = insert_key(tree, num, make_ninfo(name, cr));
-			print_tree(tree, 0);
+			// print_tree(tree, 0);
 		}
 	}
 	return 0;

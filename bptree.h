@@ -6,7 +6,9 @@
 #include <string.h>
 
 // B+ tree degree
-#define t 2
+// #define t 2
+
+static unsigned t = 2;
 
 typedef struct nodeinfo{
 	char name [31];
@@ -31,7 +33,7 @@ typedef struct bptree{
 	struct bptree * next;
 } bp_tree;
 
-bp_tree* init_tree();
+bp_tree* init_tree( unsigned );
 bp_tree* make_node();
 info * make_ninfo( char*, float );
 void print_tree( bp_tree*, unsigned );
