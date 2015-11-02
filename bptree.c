@@ -19,12 +19,19 @@ bp_tree* make_node(){
 	return new;
 }
 
+void free_node( bp_tree* T ){
+	free(T->keys);
+	free(T);
+}
+
 info * make_ninfo( char* _name, float _grade ){
 	info * new = (info*) malloc(sizeof(info));
 	strcpy(new->name, _name);
 	new->grade = _grade;
 	return new;
 }
+
+void free_ninfo( info* _data ){ free(_data); }
 
 bp_tree* free_tree( bp_tree* T ){
 	if(!T) return NULL;
@@ -44,7 +51,11 @@ bp_tree* free_tree( bp_tree* T ){
 }
 
 void print_tree( bp_tree* T, unsigned height ){
+	if(!height) printf("Impressão da árvore:\n");
+	if(!T && !height) printf("Árvore vazia!\n");
 	if(!T) return;
+	
+
 	unsigned i, j;
 	for(i = 0; i <= T->keys_number - 1; i++){
 		print_tree(T->children[i], height + 1);
@@ -58,7 +69,10 @@ void print_tree( bp_tree* T, unsigned height ){
 }
 
 void print_data( bp_tree* T ){
-	if(!T) return;
+	if(!T) { 
+		printf("Árvore vazia!\n");
+		return;
+	}
 	bp_tree* aux = T;
 	while(!aux->is_leaf)
 		aux = aux->children[0];
@@ -205,13 +219,20 @@ bp_tree* _remove_key( bp_tree* T, int key ){
 	// The key is in node T
 	if((i < T->keys_number) && (key == T->keys[i])){ // Cases 1
 		if(T->is_leaf){ // Case 1
-			printf("Case 1: %d; i: %d\n", T->keys_number, i);
+			printf("Case 1...\n");
 			unsigned j;
+
+			// Removing the data element and its keys
+			free_ninfo(T->data[i]);
 			for(j = i; j < T->keys_number - 1; j++){
 				T->keys[j] = T->keys[j + 1];
 				T->data[j] = T->data[j + 1];
 			}
 			T->keys_number--;
+			if(!T->keys_number){
+				free_node(T);
+				return NULL;
+			}
 			return T;
 		}
 	}
@@ -316,7 +337,7 @@ bp_tree* _remove_key( bp_tree* T, int key ){
 				if(!y->is_leaf)
 					for (j = 0; j < t; j++)
 						y->children[t + j] = z->children[j];
-					printf("T->keys_number %d\n",T->keys_number);
+					
 				// Adjusting keys & children after the moves in T
 				for(j = i; j < T->keys_number - 1; j++){
 					T->keys[j] = T->keys[j + 1];
@@ -326,8 +347,8 @@ bp_tree* _remove_key( bp_tree* T, int key ){
 
 				// Removing key in T
 				if(T->keys_number == 0 ) {
-					printf("Entrou \n");
-					 return _remove_key(y, key);
+					free_node(T);
+					return _remove_key(y, key);
 				}
 				T = _remove_key(T, key);
 
@@ -340,12 +361,19 @@ bp_tree* _remove_key( bp_tree* T, int key ){
 				// 		otherwise T'll give the key i to its (i-1)th child
 				z = T->children[i - 1];
 
+				unsigned x = t - 1;
+				if(i == T->keys_number && !z->is_leaf) {
+					z->keys[t - 1] = T->keys[i - 1];
+					z->keys_number++;
+					x++;
+				}
+
 				// Giving to the (i-1)th child the keys & children of the i-th child
 				unsigned j;
 				for(j = 0; j < t - 1; j++){
-					z->keys[t - 1 + j] = y->keys[j];
+					z->keys[x + j] = y->keys[j];
 					if(z->is_leaf)
-						z->data[t - 1 + j] = y->data[j];
+						z->data[x + j] = y->data[j];
 					z->keys_number++;
 				}
 				if(!z->is_leaf)
@@ -355,10 +383,16 @@ bp_tree* _remove_key( bp_tree* T, int key ){
 				// Updating T
 				T->keys_number--;
 
-				if(z->is_leaf)
+				if(z->is_leaf){
 					z->next = y->next;
+					free_node(y);
+				}
 
 				// Removing key in T
+				if(T->keys_number == 0 ) {
+					free_node(T);
+					return _remove_key(z, key);
+				}
 				T = _remove_key(T, key);
 				
 				return T;
